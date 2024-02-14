@@ -1,0 +1,70 @@
+version: "3.5"
+
+services:
+  rinha-backend01: &api
+    container_name: api1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - LOGIN_DATABASE=admin
+      - PASSWORD_DATABASE=123
+      - HOST_DATABASE=db
+      - PORT_DATABASE=5432
+    ports:
+      - "8081:8080"
+    networks:
+      - default
+    depends_on:
+      - db
+
+  rinha-backend02:
+    # Essa sintaxe reusa o que foi declarado em 'api01'.
+    <<: *api
+    ports:
+      - "8082:8080"
+    container_name: api2
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - rinha-backend01
+      - rinha-backend02
+    ports:
+      - "9999:9999"
+    networks:
+      - default
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: "10MB"
+
+  db:
+    image: postgres:latest
+    hostname: db
+    environment:
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=rinha
+    ports:
+      - "5431:5432"
+    volumes:
+      - ./script.sql:/docker-entrypoint-initdb.d/script.sql
+    command: postgres -c checkpoint_timeout=600 -c max_wal_size=4096
+    networks:
+      - default
+    deploy:
+      resources:
+        limits:
+          cpus: "0.45"
+          memory: "140MB"
+
+networks:
+  default:
+    driver: bridge
+    name: rinha-nginx-2024q1

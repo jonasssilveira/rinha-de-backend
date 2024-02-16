@@ -12,7 +12,7 @@ import (
 
 const createSaldo = `-- name: CreateSaldo :exec
 INSERT INTO saldos (cliente_id,
-                      valor)
+                    valor)
 VALUES ($1, $2)
 `
 
@@ -27,9 +27,9 @@ func (q *Queries) CreateSaldo(ctx context.Context, arg CreateSaldoParams) error 
 }
 
 const deposit = `-- name: Deposit :exec
-UPDATE saldos
+UPDATE saldos s
 SET valor = valor + $1
-WHERE cliente_id = $2
+WHERE s.cliente_id = $2
 `
 
 type DepositParams struct {
@@ -45,8 +45,8 @@ func (q *Queries) Deposit(ctx context.Context, arg DepositParams) error {
 const getSaldoCliente = `-- name: GetSaldoCliente :one
 SELECT c.limite, s.valor
 FROM saldos s
-LEFT JOIN clientes c on c.id = s.cliente_id
-WHERE c.id = $1 LIMIT 1
+         LEFT JOIN clientes c on c.id = s.cliente_id
+    and c.id = $1 LIMIT 1
 `
 
 type GetSaldoClienteRow struct {
@@ -62,9 +62,9 @@ func (q *Queries) GetSaldoCliente(ctx context.Context, id int32) (GetSaldoClient
 }
 
 const withdraw = `-- name: Withdraw :exec
-UPDATE saldos
+UPDATE saldos s
 SET valor = valor - $1
-WHERE cliente_id = $2
+WHERE s.cliente_id = $2
 `
 
 type WithdrawParams struct {

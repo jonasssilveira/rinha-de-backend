@@ -2,8 +2,7 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
-	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"rinha-de-backend-2024-q1/cmd/domain/dto"
@@ -30,15 +29,22 @@ func NewClientInfo(clientRepository repository.Client) *ClientInfo {
 
 func (c ClientInfo) GetClientExtrato(ctx context.Context, id int32) (dto.Extrato, error) {
 	transacoes, err := c.clientRepository.GetClienteTrasacoes(ctx, id)
-	if err != nil {
-		if errors.As(err, &sql.ErrNoRows) {
-			return dto.Extrato{}, fiber.NewError(http.StatusNotFound, "not found")
+	defer func(err error) {
+		if err != nil {
+			fmt.Println(err.Error())
 		}
+	}(err)
+	if err != nil {
+		fmt.Println(err.Error())
 		return dto.Extrato{}, fiber.NewError(http.StatusInternalServerError, err.Error())
-
+	}
+	if transacoes == nil {
+		return dto.Extrato{}, fiber.NewError(http.StatusNotFound, "not found")
 	}
 	saldo, err := c.clientRepository.GetSaldoCliente(ctx, id)
 	if err != nil {
+
+		fmt.Println(err.Error())
 		return dto.Extrato{}, fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 	return dto.Extrato{

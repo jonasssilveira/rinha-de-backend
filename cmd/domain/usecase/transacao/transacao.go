@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"rinha-de-backend-2024-q1/cmd/domain/dto"
@@ -31,16 +32,26 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 	var err error
 	saldo, err := t.clientRepository.GetSaldoCliente(ctx, id)
 
+	defer func(err error) {
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}(err)
+
 	if err != nil {
 		if errors.As(err, &sql.ErrNoRows) {
 			return dto.Saldo{}, fiber.NewError(http.StatusNotFound, "not found")
 		}
+
+		fmt.Println(err.Error())
 		return dto.Saldo{}, fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 	switch transacaoDTO.Tipo {
 	case "d":
 
 		if (saldo.Limite.Int64 - (transacaoDTO.Valor - saldo.Valor)) < 0 {
+
+			fmt.Println("valor da transacao nao pode diminuir o limite abaixo de 0")
 			return dto.Saldo{}, fiber.NewError(http.StatusUnprocessableEntity, "valor da transacao nao pode diminuir o limite abaixo de 0")
 		}
 
@@ -53,9 +64,12 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 			Valor:     transacaoDTO.Valor,
 			ClienteID: id,
 		})
+	default:
+		return dto.Saldo{}, fiber.NewError(http.StatusUnprocessableEntity)
 	}
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return dto.Saldo{}, err
 	}
 
@@ -67,6 +81,7 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 	})
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return dto.Saldo{}, fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
 	return dto.Saldo{

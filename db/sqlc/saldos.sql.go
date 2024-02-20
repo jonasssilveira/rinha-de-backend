@@ -7,12 +7,13 @@ package db
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createSaldo = `-- name: CreateSaldo :exec
 INSERT INTO saldos (cliente_id,
-                    valor)
+                      valor)
 VALUES ($1, $2)
 `
 
@@ -22,14 +23,14 @@ type CreateSaldoParams struct {
 }
 
 func (q *Queries) CreateSaldo(ctx context.Context, arg CreateSaldoParams) error {
-	_, err := q.db.ExecContext(ctx, createSaldo, arg.ClienteID, arg.Valor)
+	_, err := q.db.Exec(ctx, createSaldo, arg.ClienteID, arg.Valor)
 	return err
 }
 
 const deposit = `-- name: Deposit :exec
-UPDATE saldos s
+UPDATE saldos
 SET valor = valor + $1
-WHERE s.cliente_id = $2
+WHERE cliente_id = $2
 `
 
 type DepositParams struct {
@@ -38,33 +39,33 @@ type DepositParams struct {
 }
 
 func (q *Queries) Deposit(ctx context.Context, arg DepositParams) error {
-	_, err := q.db.ExecContext(ctx, deposit, arg.Valor, arg.ClienteID)
+	_, err := q.db.Exec(ctx, deposit, arg.Valor, arg.ClienteID)
 	return err
 }
 
 const getSaldoCliente = `-- name: GetSaldoCliente :one
 SELECT c.limite, s.valor
 FROM saldos s
-         LEFT JOIN clientes c on c.id = s.cliente_id
-    and c.id = $1 LIMIT 1
+LEFT JOIN clientes c on c.id = s.cliente_id
+WHERE c.id = $1 LIMIT 1
 `
 
 type GetSaldoClienteRow struct {
-	Limite sql.NullInt64 `json:"limite"`
-	Valor  int64         `json:"valor"`
+	Limite pgtype.Int8 `json:"limite"`
+	Valor  int64       `json:"valor"`
 }
 
 func (q *Queries) GetSaldoCliente(ctx context.Context, id int32) (GetSaldoClienteRow, error) {
-	row := q.db.QueryRowContext(ctx, getSaldoCliente, id)
+	row := q.db.QueryRow(ctx, getSaldoCliente, id)
 	var i GetSaldoClienteRow
 	err := row.Scan(&i.Limite, &i.Valor)
 	return i, err
 }
 
 const withdraw = `-- name: Withdraw :exec
-UPDATE saldos s
+UPDATE saldos
 SET valor = valor - $1
-WHERE s.cliente_id = $2
+WHERE cliente_id = $2
 `
 
 type WithdrawParams struct {
@@ -73,6 +74,6 @@ type WithdrawParams struct {
 }
 
 func (q *Queries) Withdraw(ctx context.Context, arg WithdrawParams) error {
-	_, err := q.db.ExecContext(ctx, withdraw, arg.Valor, arg.ClienteID)
+	_, err := q.db.Exec(ctx, withdraw, arg.Valor, arg.ClienteID)
 	return err
 }

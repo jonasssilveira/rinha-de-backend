@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTransacoes = `-- name: CreateTransacoes :exec
@@ -26,7 +27,7 @@ type CreateTransacoesParams struct {
 }
 
 func (q *Queries) CreateTransacoes(ctx context.Context, arg CreateTransacoesParams) error {
-	_, err := q.db.ExecContext(ctx, createTransacoes,
+	_, err := q.db.Exec(ctx, createTransacoes,
 		arg.ClienteID,
 		arg.Valor,
 		arg.Tipo,
@@ -39,18 +40,18 @@ const getClienteTrasacoes = `-- name: GetClienteTrasacoes :many
 SELECT t.valor, t.tipo, t.descricao, t.realizada_em
 FROM transacoes t
 LEFT JOIN clientes c on c.id = t.cliente_id
-WHERE c.id = $1 LIMIT 10
+WHERE c.id = $1 order by t.realizada_em desc LIMIT 10
 `
 
 type GetClienteTrasacoesRow struct {
-	Valor       int64     `json:"valor"`
-	Tipo        string    `json:"tipo"`
-	Descricao   string    `json:"descricao"`
-	RealizadaEm time.Time `json:"realizada_em"`
+	Valor       int64            `json:"valor"`
+	Tipo        string           `json:"tipo"`
+	Descricao   string           `json:"descricao"`
+	RealizadaEm pgtype.Timestamp `json:"realizada_em"`
 }
 
 func (q *Queries) GetClienteTrasacoes(ctx context.Context, id int32) ([]GetClienteTrasacoesRow, error) {
-	rows, err := q.db.QueryContext(ctx, getClienteTrasacoes, id)
+	rows, err := q.db.Query(ctx, getClienteTrasacoes, id)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +68,6 @@ func (q *Queries) GetClienteTrasacoes(ctx context.Context, id int32) ([]GetClien
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

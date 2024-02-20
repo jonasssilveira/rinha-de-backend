@@ -1,20 +1,16 @@
 package config
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const (
-	dbDriver = "postgres"
-)
-
-func GetDBClient() *sql.DB {
-	DB, err := sql.Open(dbDriver, BuildURLConnection())
-	if err != nil {
+func GetDBClient(ctx context.Context) *pgxpool.Pool {
+	if pool, err := pgxpool.NewWithConfig(ctx, Config()); err != nil {
 		_ = fmt.Errorf(err.Error())
-		return nil
+	} else {
+		return pool
 	}
-	return DB
+	return &pgxpool.Pool{}
 }

@@ -5,7 +5,7 @@
 package db
 
 import (
-	"time"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Cliente struct {
@@ -21,10 +21,10 @@ type Saldo struct {
 }
 
 type Transaco struct {
-	ID          int32     `json:"id"`
-	ClienteID   int32     `json:"cliente_id"`
-	Valor       int64     `json:"valor"`
-	Tipo        string    `json:"tipo"`
-	Descricao   string    `json:"descricao"`
-	RealizadaEm time.Time `json:"realizada_em"`
+	ID          int32            `json:"id"`
+	ClienteID   int32            `json:"cliente_id"`
+	Valor       int64            `json:"valor"`
+	Tipo        string           `json:"tipo"`
+	Descricao   string           `json:"descricao"`
+	RealizadaEm pgtype.Timestamp `json:"realizada_em"`
 }

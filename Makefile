@@ -25,7 +25,7 @@ remove-coverage-files:
 	rm cover_report.out coverage.out
 
 sqlc-generate:
-	docker run --rm -v "$(shell pwd)/db:/src" -w /src sqlc/sqlc generate
+	docker run --rm -v "$(shell pwd):/src" -w /src sqlc/sqlc generate
 
 all-checks:
 	-$(MAKE) format

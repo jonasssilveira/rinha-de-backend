@@ -9,4 +9,4 @@ VALUES ($1, $2, $3, $4);
 SELECT t.valor, t.tipo, t.descricao, t.realizada_em
 FROM transacoes t
 LEFT JOIN clientes c on c.id = t.cliente_id
-WHERE c.id = $1 LIMIT 10;
+WHERE c.id = $1 order by t.realizada_em desc LIMIT 10;

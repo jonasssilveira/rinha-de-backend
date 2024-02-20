@@ -13,15 +13,14 @@ import (
 
 func main() {
 	app := fiber.New()
-	database := config.GetDBClient()
+
+	database := config.GetDBClient(context.Background())
 
 	dbClient := db.New(database)
+	defer database.Reset()
 
 	useCaseClientSaldo := usecaseclient.NewClientInfo(dbClient)
 	useCaseClientTransacao := usecasetransacao.NewTransacao(dbClient)
-
-	extrato, err2 := useCaseClientSaldo.GetClientExtrato(context.Background(), 1)
-	fmt.Println(extrato, err2)
 
 	handleTransacao := handlers.NewTransacao(useCaseClientTransacao)
 	handleSaldo := handlers.NewSaldoHandler(useCaseClientSaldo)

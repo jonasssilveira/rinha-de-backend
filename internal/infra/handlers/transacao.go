@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
+	"regexp"
 	"rinha-de-backend-2024-q1/cmd/domain/dto"
 	usecase "rinha-de-backend-2024-q1/cmd/domain/usecase/transacao"
 	"strconv"
@@ -28,7 +29,15 @@ func (t *Transacao) HandleCreateTransacao(ctx *fiber.Ctx) error {
 	body := ctx.Body()
 	var transacaoDTO dto.Transacao
 	if err := json.Unmarshal(body, &transacaoDTO); err != nil {
-		return err
+		return fiber.NewError(http.StatusUnprocessableEntity)
+	}
+
+	if transacaoDTO.Descricao == "" || &transacaoDTO.Descricao == nil || regexp.MustCompile(`\s`).MatchString(transacaoDTO.Descricao) {
+		return fiber.NewError(422)
+	}
+
+	if transacaoDTO.Valor == 0 {
+		return fiber.NewError(422)
 	}
 
 	trasacao, err := t.extratoClient.CreateClientTrasacao(ctx.Context(), int32(idClient), transacaoDTO)

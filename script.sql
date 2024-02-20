@@ -69,14 +69,14 @@ VALUES ('o barato sai caro', 1000 * 100),
        ('padaria joia de cocaia', 100000 * 100),
        ('kid mais', 5000 * 100);
 INSERT INTO transacoes (cliente_id, valor, tipo, descricao, realizada_em)
-VALUES (1, 500, 'D', 'Deposit', '2023-12-31 10:30:00'),
-       (1, -200, 'W', 'Withdrawal', '2023-12-30 09:45:00'),
-       (2, 1000, 'D', 'Deposit', '2023-12-29 15:20:00'),
-       (3, -300, 'W', 'Withdrawal', '2023-12-28 14:10:00'),
-       (4, 800, 'D', 'Deposit', '2023-12-27 11:00:00');
+VALUES (1, 500, 'd', 'devolve', '2023-12-31 10:30:00'),
+       (1, -200, 'c', 'tome', '2023-12-30 09:45:00'),
+       (2, 1000, 'd', 'devolve', '2023-12-29 15:20:00'),
+       (3, -300, 'c', 'toma', '2023-12-28 14:10:00'),
+       (4, 800, 'd', 'devolve', '2023-12-27 11:00:00');
 INSERT INTO saldos (cliente_id, valor)
-VALUES (1, 300),
-       (2, 1500),
-       (3, 800),
-       (4, 1200),
-       (5, 2000);
+VALUES (1, 0),
+       (2, 0),
+       (3, 0),
+       (4, 0),
+       (5, 0);

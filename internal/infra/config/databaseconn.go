@@ -44,7 +44,7 @@ func Config() *pgxpool.Config {
 
 	dbConfig.MaxConns = int32(10000)
 	dbConfig.MinConns = int32(20)
-	dbConfig.MaxConnLifetime = time.Duration(1) * time.Second
+	dbConfig.MaxConnLifetime = time.Duration(500) * time.Second
 	dbConfig.MaxConnIdleTime = time.Duration(500) * time.Millisecond
 	dbConfig.ConnConfig.ConnectTimeout = time.Duration(10) * time.Second
 

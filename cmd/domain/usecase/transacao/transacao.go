@@ -48,11 +48,8 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 	}
 	switch transacaoDTO.Tipo {
 	case "d":
-
-		if (saldo.Limite.Int64 - (transacaoDTO.Valor - saldo.Valor)) < 0 {
-
-			fmt.Println("valor da transacao nao pode diminuir o limite abaixo de 0")
-			return dto.Saldo{}, fiber.NewError(http.StatusUnprocessableEntity, "valor da transacao nao pode diminuir o limite abaixo de 0")
+		if (saldo.Valor - transacaoDTO.Valor) < 0 {
+			return dto.Saldo{}, fiber.NewError(http.StatusUnprocessableEntity)
 		}
 
 		err = t.clientRepository.Withdraw(ctx, db.WithdrawParams{

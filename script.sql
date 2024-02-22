@@ -54,7 +54,6 @@ RETURN NEW;
 END;
 $$
 LANGUAGE plpgsql;
-
 --Inserção da function
 CREATE TRIGGER enforce_table_size_limit
     BEFORE INSERT

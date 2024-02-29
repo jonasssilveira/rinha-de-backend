@@ -1,11 +1,12 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"os"
-	"time"
 )
 
 type DatabaseConn struct {
@@ -42,10 +43,13 @@ func Config() *pgxpool.Config {
 		log.Fatal("Failed to create a config, error: ", err)
 	}
 
-	dbConfig.MaxConns = int32(1000)
-	dbConfig.MinConns = int32(10)
-	dbConfig.MaxConnLifetime = time.Duration(20) * time.Millisecond
-	dbConfig.MaxConnIdleTime = time.Duration(20) * time.Millisecond
+	dbConfig.BeforeAcquire = func(ctx context.Context, c *pgx.Conn) bool {
+		exec := c.QueryRow(ctx, "SELECT count(*) FROM pg_stat_activity;")
+		var quantConn int
+		exec.Scan(&quantConn)
+		fmt.Printf("Quantidade de conexoes: %d\n", quantConn)
 
+		return true
+	}
 	return dbConfig
 }

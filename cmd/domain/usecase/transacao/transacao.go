@@ -67,38 +67,38 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 			return dto.Saldo{}, fiber.NewError(http.StatusUnprocessableEntity)
 		}
 
-		err = t.clientRepository.Withdraw(ctx, db.WithdrawParams{
-			Valor:     transacaoDTO.Valor,
-			ClienteID: id,
-		})
-		//wg.Add(1)
-		//go func() {
-		//	batch.Queue(db.Withdraw, transacaoDTO.Valor, id)
-		//	wg.Done()
-		//}()
+		//err = t.clientRepository.Withdraw(ctx, db.WithdrawParams{
+		//	Valor:     transacaoDTO.Valor,
+		//	ClienteID: id,
+		//})
+		wg.Add(1)
+		go func() {
+			batch.Queue(db.Withdraw, transacaoDTO.Valor, id)
+			wg.Done()
+		}()
 	case "c":
-		err = t.clientRepository.Deposit(ctx, db.DepositParams{
-			Valor:     transacaoDTO.Valor,
-			ClienteID: id,
-		})
-		//wg.Add(1)
-		//go func() {
-		//	batch.Queue(db.Deposit, transacaoDTO.Valor, id)
-		//	wg.Done()
-		//}()
+		//err = t.clientRepository.Deposit(ctx, db.DepositParams{
+		//	Valor:     transacaoDTO.Valor,
+		//	ClienteID: id,
+		//})
+		wg.Add(1)
+		go func() {
+			batch.Queue(db.Deposit, transacaoDTO.Valor, id)
+			wg.Done()
+		}()
 	default:
 		return dto.Saldo{}, fiber.NewError(http.StatusUnprocessableEntity)
 	}
 
-	err = t.clientRepository.CreateTransacoes(ctx, db.CreateTransacoesParams{
-		ClienteID: id,
-		Valor:     transacaoDTO.Valor,
-		Tipo:      transacaoDTO.Tipo,
-		Descricao: transacaoDTO.Descricao,
-	})
-	//wg.Wait()
-	//sentBatch := t.pool.SendBatch(ctx, &batch)
-	//sentBatch.Close()
+	//err = t.clientRepository.CreateTransacoes(ctx, db.CreateTransacoesParams{
+	//	ClienteID: id,
+	//	Valor:     transacaoDTO.Valor,
+	//	Tipo:      transacaoDTO.Tipo,
+	//	Descricao: transacaoDTO.Descricao,
+	//})
+	wg.Wait()
+	sentBatch := t.pool.SendBatch(ctx, &batch)
+	sentBatch.Close()
 
 	return dto.Saldo{
 		Limite: saldo.Limite.Int64,

@@ -6,10 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
 	"rinha-de-backend-2024-q1/cmd/domain/dto"
 	db "rinha-de-backend-2024-q1/db/sqlc"
 	"rinha-de-backend-2024-q1/internal/infra/repository"
+	"sync"
 )
 
 type TransacaoClient interface {
@@ -18,13 +21,16 @@ type TransacaoClient interface {
 
 type Transacao struct {
 	clientRepository repository.Client
+	pool             *pgxpool.Pool
 }
 
 func NewTransacao(
 	clientRepository repository.Client,
+	pool *pgxpool.Pool,
 ) *Transacao {
 	return &Transacao{
 		clientRepository: clientRepository,
+		pool:             pool,
 	}
 }
 
@@ -42,10 +48,19 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 		if errors.As(err, &sql.ErrNoRows) {
 			return dto.Saldo{}, fiber.NewError(http.StatusNotFound, "not found")
 		}
-
 		fmt.Println(err.Error())
 		return dto.Saldo{}, fiber.NewError(http.StatusInternalServerError, err.Error())
 	}
+
+	batch := pgx.Batch{}
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		batch.Queue(db.CreateTransacoes, id, transacaoDTO.Valor, transacaoDTO.Tipo, transacaoDTO.Descricao)
+		wg.Done()
+	}()
+
 	switch transacaoDTO.Tipo {
 	case "d":
 		if (saldo.Valor - transacaoDTO.Valor) < 0 {
@@ -56,18 +71,23 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 			Valor:     transacaoDTO.Valor,
 			ClienteID: id,
 		})
+		//wg.Add(1)
+		//go func() {
+		//	batch.Queue(db.Withdraw, transacaoDTO.Valor, id)
+		//	wg.Done()
+		//}()
 	case "c":
 		err = t.clientRepository.Deposit(ctx, db.DepositParams{
 			Valor:     transacaoDTO.Valor,
 			ClienteID: id,
 		})
+		//wg.Add(1)
+		//go func() {
+		//	batch.Queue(db.Deposit, transacaoDTO.Valor, id)
+		//	wg.Done()
+		//}()
 	default:
 		return dto.Saldo{}, fiber.NewError(http.StatusUnprocessableEntity)
-	}
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return dto.Saldo{}, err
 	}
 
 	err = t.clientRepository.CreateTransacoes(ctx, db.CreateTransacoesParams{
@@ -76,11 +96,10 @@ func (t Transacao) CreateClientTrasacao(ctx context.Context, id int32, transacao
 		Tipo:      transacaoDTO.Tipo,
 		Descricao: transacaoDTO.Descricao,
 	})
+	//wg.Wait()
+	//sentBatch := t.pool.SendBatch(ctx, &batch)
+	//sentBatch.Close()
 
-	if err != nil {
-		fmt.Println(err.Error())
-		return dto.Saldo{}, fiber.NewError(http.StatusInternalServerError, err.Error())
-	}
 	return dto.Saldo{
 		Limite: saldo.Limite.Int64,
 		Saldo:  saldo.Valor - transacaoDTO.Valor,

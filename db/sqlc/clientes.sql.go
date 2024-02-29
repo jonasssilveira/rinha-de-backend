@@ -9,7 +9,7 @@ import (
 	"context"
 )
 
-const createCliente = `-- name: CreateCliente :one
+const CreateCliente = `-- name: CreateCliente :one
 INSERT INTO clientes (nome,
                  limite)
 VALUES ($1, $2)RETURNING nome, limite
@@ -26,24 +26,24 @@ type CreateClienteRow struct {
 }
 
 func (q *Queries) CreateCliente(ctx context.Context, arg CreateClienteParams) (CreateClienteRow, error) {
-	row := q.db.QueryRow(ctx, createCliente, arg.Nome, arg.Limite)
+	row := q.db.QueryRow(ctx, CreateCliente, arg.Nome, arg.Limite)
 	var i CreateClienteRow
 	err := row.Scan(&i.Nome, &i.Limite)
 	return i, err
 }
 
-const deleteCliente = `-- name: DeleteCliente :exec
+const DeleteCliente = `-- name: DeleteCliente :exec
 DELETE
 FROM clientes
 WHERE id = $1
 `
 
 func (q *Queries) DeleteCliente(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteCliente, id)
+	_, err := q.db.Exec(ctx, DeleteCliente, id)
 	return err
 }
 
-const getCliente = `-- name: GetCliente :one
+const GetCliente = `-- name: GetCliente :one
 SELECT limite, nome
 FROM clientes
 WHERE id = $1 LIMIT 1
@@ -55,7 +55,7 @@ type GetClienteRow struct {
 }
 
 func (q *Queries) GetCliente(ctx context.Context, id int32) (GetClienteRow, error) {
-	row := q.db.QueryRow(ctx, getCliente, id)
+	row := q.db.QueryRow(ctx, GetCliente, id)
 	var i GetClienteRow
 	err := row.Scan(&i.Limite, &i.Nome)
 	return i, err

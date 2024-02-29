@@ -12,11 +12,13 @@ import (
 
 type Transacao struct {
 	extratoClient usecase.TransacaoClient
+	regex         *regexp.Regexp
 }
 
-func NewTransacao(clientTransacao usecase.TransacaoClient) *Transacao {
+func NewTransacao(clientTransacao usecase.TransacaoClient, regex *regexp.Regexp) *Transacao {
 	return &Transacao{
 		extratoClient: clientTransacao,
+		regex:         regex,
 	}
 }
 
@@ -32,7 +34,7 @@ func (t *Transacao) HandleCreateTransacao(ctx *fiber.Ctx) error {
 		return fiber.NewError(http.StatusUnprocessableEntity)
 	}
 
-	if transacaoDTO.Descricao == "" || &transacaoDTO.Descricao == nil || regexp.MustCompile(`\s`).MatchString(transacaoDTO.Descricao) {
+	if transacaoDTO.Descricao == "" || &transacaoDTO.Descricao == nil || t.regex.MatchString(transacaoDTO.Descricao) {
 		return fiber.NewError(422)
 	}
 

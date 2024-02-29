@@ -27,10 +27,10 @@ func BuildURLConnection() string {
 		DatabaseName: "rinha",
 	}
 
-	return fmt.Sprintf("%v://%v:%v@%v:%v/%v?sslmode=disable&connect_timeout=%d",
+	return fmt.Sprintf("%v://%v:%v@%v:%v/%v?sslmode=disable",
 		databaseURLConnection.SGDatabase, databaseURLConnection.Login,
 		databaseURLConnection.Password, databaseURLConnection.Host,
-		databaseURLConnection.Port, databaseURLConnection.DatabaseName, time.Duration(2))
+		databaseURLConnection.Port, databaseURLConnection.DatabaseName)
 
 }
 
@@ -42,25 +42,10 @@ func Config() *pgxpool.Config {
 		log.Fatal("Failed to create a config, error: ", err)
 	}
 
-	dbConfig.MaxConns = int32(10000)
-	dbConfig.MinConns = int32(20)
-	dbConfig.MaxConnLifetime = time.Duration(500) * time.Second
-	dbConfig.MaxConnIdleTime = time.Duration(500) * time.Millisecond
-	dbConfig.ConnConfig.ConnectTimeout = time.Duration(10) * time.Second
-
-	//dbConfig.BeforeAcquire = func(ctx context.Context, c *pgx.Conn) bool {
-	//	log.Println("Before acquiring the connection pool to the database!!")
-	//	return true
-	//}
-	//
-	//dbConfig.AfterRelease = func(*pgx.Conn) bool {
-	//	log.Println("After release the connection pool to the database!!")
-	//	return true
-	//}
-	//
-	//dbConfig.BeforeClose = func(c *pgx.Conn) {
-	//	log.Println("Closed the connection pool to the database!!")
-	//}
+	dbConfig.MaxConns = int32(1000)
+	dbConfig.MinConns = int32(10)
+	dbConfig.MaxConnLifetime = time.Duration(20) * time.Millisecond
+	dbConfig.MaxConnIdleTime = time.Duration(20) * time.Millisecond
 
 	return dbConfig
 }

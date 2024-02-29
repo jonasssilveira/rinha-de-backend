@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createTransacoes = `-- name: CreateTransacoes :exec
+const CreateTransacoes = `-- name: CreateTransacoes :exec
 INSERT INTO transacoes (cliente_id,
                       valor,
                       tipo,
@@ -27,7 +27,7 @@ type CreateTransacoesParams struct {
 }
 
 func (q *Queries) CreateTransacoes(ctx context.Context, arg CreateTransacoesParams) error {
-	_, err := q.db.Exec(ctx, createTransacoes,
+	_, err := q.db.Exec(ctx, CreateTransacoes,
 		arg.ClienteID,
 		arg.Valor,
 		arg.Tipo,
@@ -36,7 +36,7 @@ func (q *Queries) CreateTransacoes(ctx context.Context, arg CreateTransacoesPara
 	return err
 }
 
-const getClienteTrasacoes = `-- name: GetClienteTrasacoes :many
+const GetClienteTrasacoes = `-- name: GetClienteTrasacoes :many
 SELECT t.valor, t.tipo, t.descricao, t.realizada_em
 FROM transacoes t
 LEFT JOIN clientes c on c.id = t.cliente_id
@@ -51,7 +51,7 @@ type GetClienteTrasacoesRow struct {
 }
 
 func (q *Queries) GetClienteTrasacoes(ctx context.Context, id int32) ([]GetClienteTrasacoesRow, error) {
-	rows, err := q.db.Query(ctx, getClienteTrasacoes, id)
+	rows, err := q.db.Query(ctx, GetClienteTrasacoes, id)
 	if err != nil {
 		return nil, err
 	}

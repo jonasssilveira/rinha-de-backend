@@ -56,7 +56,7 @@ services:
     volumes:
       - ./script.sql:/docker-entrypoint-initdb.d/script.sql
       - ./postgresql.conf:/docker-entrypoint-initdb.d/postgresql.conf
-    command: postgres -c checkpoint_timeout=600 -c max_wal_size=4096 -c max_connections=5000 -c idle_session_timeout=650
+    command: postgres -c checkpoint_timeout=600 -c max_wal_size=4096 -c max_connections=5000 -c idle_session_timeout=700
     networks:
       - default
     deploy:

@@ -13,3 +13,8 @@ type Transaction struct {
 	Description     string    `json:"descricao"`
 	TransactionDate time.Time `json:"realizada_em"`
 }
+
+type TransactionAsync struct {
+	Transactions []Transaction
+	Err          error
+}

@@ -38,7 +38,7 @@ func (s *PostgresTransactionStore) GetBalance(clientId int) (ClientBalance, erro
 	clientBalance := ClientBalance{}
 	err := s.db.QueryRow(query, clientId).Scan(&clientBalance.Balance, &clientBalance.AccountLimit)
 	if err != nil {
-		return clientBalance, ErrClientNotFound
+		return clientBalance, err
 
 	}
 

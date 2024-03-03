@@ -25,7 +25,7 @@ ALTER TABLE
 SET
     (autovacuum_enabled = FALSE);
 
-CREATE INDEX IF NOT EXISTS transactions_client_id_idx ON transactions(client_id ASC);
+CREATE INDEX IF NOT EXISTS transactions_created_at_idx ON transactions(created_at DESC);
 
 ---
 DO $$ BEGIN

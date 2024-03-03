@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/sync/errgroup"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -75,33 +75,36 @@ func (s *Server) getExtrato(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(http.StatusUnprocessableEntity)
 	}
-
-	errGoroutineGroup, _ := errgroup.WithContext(ctx.Context())
-
-	balanceChan := make(chan ClientBalance)
-	transactionsChan := make(chan []Transaction)
-
-	errGoroutineGroup.Go(func() error {
-		goRoutinebalance, err := s.transactionStore.GetBalance(clientId)
-		balanceChan <- goRoutinebalance
-		return err
-	})
-	errGoroutineGroup.Go(func() error {
-		goRoutinetransactions, err := s.transactionStore.GetTransactions(clientId, MaxStatementTranscations)
-		transactionsChan <- goRoutinetransactions
-		return err
-	})
-	if errGoroutineGroup.Wait() != nil {
-		if errors.Is(err, ErrClientNotFound) {
-			return fiber.NewError(http.StatusNotFound)
-		}
-		return fiber.NewError(http.StatusInternalServerError)
+	if clientId > 5 {
+		return fiber.NewError(http.StatusNotFound)
 	}
+	balanceChan := make(chan ClientBalance, 1)
+	transactionsChan := make(chan []Transaction, 1)
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		wg.Done()
+		goRoutinebalance, err := s.transactionStore.GetBalance(clientId)
+		if err != nil {
+			return
+		}
+		balanceChan <- goRoutinebalance
+	}()
+	go func() {
+		defer wg.Done()
+		goRoutinetransactions, err := s.transactionStore.GetTransactions(clientId, MaxStatementTranscations)
+		if err != nil {
+			return
+		}
+		transactionsChan <- goRoutinetransactions
+	}()
+	wg.Wait()
 	balance := <-balanceChan
 	transactions := <-transactionsChan
-	statement := buildStatement(balance, transactions)
 
-	return ctx.JSON(statement)
+	return ctx.JSON(buildStatement(balance, transactions))
 }
 
 func processTransaction(

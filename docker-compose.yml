@@ -2,10 +2,10 @@ version: '3'
 
 services:
   api01: &api
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # image: gustavonovaes/rinha-backend-2024-go:latest
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+    image: jonasfeanor/rinha-backend-2024-q1:latest
     environment:
       - API_PORT=3000
       - LOGIN_DATABASE=admin

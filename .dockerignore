@@ -3,3 +3,6 @@ tmp
 .go
 .github
 .idea
+conf
+load-test
+README.md

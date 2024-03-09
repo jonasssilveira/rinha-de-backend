@@ -22,3 +22,8 @@ type ClientStatementBalance struct {
 	AccountLimit  int       `json:"limite"`
 	StatementDate time.Time `json:"data_extrato"`
 }
+
+type ClientAsync struct {
+	ClientBalance
+	Err error
+}

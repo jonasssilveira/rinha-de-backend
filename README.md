@@ -32,18 +32,17 @@ curl -X POST http://localhost:9999/clientes/1/transacoes \
 ---- Global Information --------------------------------------------------------
 > request count                                      61478 (OK=61478  KO=0     )
 > min response time                                      0 (OK=0      KO=-     )
-> max response time                                     46 (OK=46     KO=-     )
+> max response time                                     39 (OK=39     KO=-     )
 > mean response time                                     2 (OK=2      KO=-     )
 > std deviation                                          1 (OK=1      KO=-     )
 > response time 50th percentile                          1 (OK=1      KO=-     )
 > response time 75th percentile                          2 (OK=2      KO=-     )
 > response time 95th percentile                          4 (OK=4      KO=-     )
-> response time 99th percentile                          6 (OK=6      KO=-     )
+> response time 99th percentile                          4 (OK=4      KO=-     )
 > mean requests/sec                                250.931 (OK=250.931 KO=-     )
 ---- Response Time Distribution ------------------------------------------------
 > t < 800 ms                                         61478 (100%)
 > 800 ms <= t < 1200 ms                                  0 (  0%)
 > t >= 1200 ms                                           0 (  0%)
 > failed                                                 0 (  0%)
-================================================================================
-```
+================================================================================```

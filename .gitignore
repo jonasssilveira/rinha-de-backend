@@ -2,3 +2,4 @@
 api
 tmp/
 __debug*
+.idea
